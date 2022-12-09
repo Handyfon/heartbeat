@@ -8,9 +8,9 @@ The less hp a character has the higher the visibility of the overlay.
 <h1>Images and Gifs:</h1>
 <div>
 Demonstration:
-https://imgur.com/CmFBFsw.gif
-Low HP:
-https://imgur.com/5UNkbSl.gif" title="Low HP"
-Player_Death
-https://imgur.com/erUkfZP.gif
+https://imgur.com/CmFBFsw.gif<br>
+Low HP:<br>
+https://imgur.com/5UNkbSl.gif" title="Low HP"<br>
+Player_Death<br>
+https://imgur.com/erUkfZP.gif<br>
 
