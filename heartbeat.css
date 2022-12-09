@@ -1,0 +1,51 @@
+@keyframes heartbeat
+{
+  0%
+  {
+    transform: scale( 1.05 );
+  }
+  20%
+  {
+    transform: scale( 1 );
+  }
+  40%
+  {
+    transform: scale( 1.05 );
+  }
+  60%
+  {
+    transform: scale( 1 );
+  }
+  80%
+  {
+    transform: scale( 1.05 );
+  }
+  100%
+  {
+    transform: scale( 1.05 );
+  }
+}
+img.animated {
+    animation: heartbeat 1s infinite;
+}
+@-webkit-keyframes fadeOut {
+    0% { opacity: 1;}
+	10% { opacity: 1;}
+    99% { opacity: 0.01;width: 100%; height: 100%;}
+    100% { opacity: 0;width: 0; height: 0;}
+}  
+@keyframes fadeOut {
+    0% { opacity: 1;}
+	10% { opacity: 1;}
+    99% { opacity: 0.01;width: 100%; height: 100%;}
+    100% { opacity: 0;width: 0; height: 0;}
+}
+img#heartbeat {
+    animation-fill-mode: forwards;
+}
+.heartbeatTakeDamage{
+	animation: fadeOut 1s;
+}
+img#hearbeatDMGOverlay {
+    background: radial-gradient(circle, rgb(255 255 255 / 0%) 27%, rgb(145 0 0) 100%);
+}
