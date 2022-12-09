@@ -6,6 +6,12 @@ Heatbeat adds an overlay for hurt characters similar to a video game. This modul
 The less hp a character has the higher the visibility of the overlay.
 
 <h1>Images and Gifs:</h1>
+<div>
 <img src="https://imgur.com/CmFBFsw.gif" title="Demonstration"></img></br>
+</div>
+<div>
 <img src="https://imgur.com/5UNkbSl.gif" title="Low HP"></img></br>
+</div>
+<div>
 <img src="https://i.imgur.com/erUkfZP.gif" title="Death"></img></br>
+</div>
