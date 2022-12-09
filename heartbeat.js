@@ -314,7 +314,6 @@ function setheartbeat(dhp = null, token = null){
 		if(game.settings.get('heartbeat', 'canvasBrightness')){
 			style += 'brightness('+brightnessvalue+')';
 		}
-		style += 'sepia('+red_overlayvalue+') hue-rotate(297deg) saturate(2.5)'
 		$("#board")[0].style.filter = style;
 	}
 	else{
