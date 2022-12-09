@@ -10,6 +10,7 @@ The less hp a character has the higher the visibility of the overlay.
 </div>
 <div>
 <img src="https://imgur.com/5UNkbSl.gif" title="Low HP"></img></br>
+<img src="https://i.imgur.com/gDg6gNv.gif" title="Foundry Achievements Player View"></img></br>
 </div>
 <div>
 <img src="https://i.imgur.com/erUkfZP.gif" title="Death"></img></br>
