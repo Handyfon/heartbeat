@@ -4,7 +4,6 @@ Heatbeat adds an overlay for hurt characters similar to a video game. This modul
 <b>Manifest: https://raw.githubusercontent.com/Handyfon/heartbeat/main/module.json</b> 
 
 The less hp a character has the higher the visibility of the overlay.
-
 <h1>Images and Gifs:</h1>
 <div>
 <img src="https://imgur.com/CmFBFsw.gif" title="Demonstration"></img></br>
