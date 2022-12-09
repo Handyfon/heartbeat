@@ -1,3 +1,4 @@
+<b>SUPPORT: https://discord.gg/gs5hAgxBx3</b></br>
 Make hp changes exiting and immersive!
 Heatbeat adds an overlay for hurt characters similar to a video game. This module is system agnostic and very customizable!
 
