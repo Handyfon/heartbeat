@@ -25,7 +25,7 @@ Customize at whish percentages the effects start<br>
 Demonstration:
 https://imgur.com/CmFBFsw.gif<br>
 Low HP:<br>
-https://imgur.com/5UNkbSl.gif" title="Low HP"<br>
+![lowHP](https://imgur.com/5UNkbSl.gif)<br>
 Player_Death<br>
-https://imgur.com/erUkfZP.gif<br>
+![lowHP](https://imgur.com/erUkfZP.gif)<br>
 
