@@ -23,9 +23,9 @@ Customize at whish percentages the effects start<br>
 <h1>Images and Gifs:</h1>
 <div>
 Demonstration:
-https://imgur.com/CmFBFsw.gif<br>
+https://imgur.com/CmFBFsw.gif
 Low HP:<br>
-![lowHP](https://imgur.com/5UNkbSl.gif)<br>
+https://imgur.com/5UNkbSl.gif
 Player_Death<br>
-![lowHP](https://imgur.com/erUkfZP.gif)<br>
+https://imgur.com/erUkfZP.gif
 
