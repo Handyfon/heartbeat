@@ -28,6 +28,15 @@ Hooks.once('init', function() {
         type: Boolean,
 		onChange: () => {reloadSettings();},
     });
+	game.settings.register('heartbeat', 'invertDamageOverlay', {
+        name: 'Invert Damage Overlay',
+        hint: 'Some systems (for example PF2e) may calculate damage differently. Enable this to display the correct color for the damage animation.',
+        scope: 'world',
+        config: true,
+        default: false,
+        type: Boolean,
+		onChange: () => {reloadSettings();},
+    });
 	game.settings.register('heartbeat', 'gmPreview', {
         name: 'GM Preview',
         hint: 'Lets you preview the effect by clicking on tokens',
@@ -336,6 +345,9 @@ async function damage(percent, dhp = null){
 	if(dhp == null)
 		damage = 0;
 	
+	if(game.settings.get('heartbeat', 'invertDamageOverlay'))
+	dhp = -dhp;
+
 	if(dhp > 0){
 		$("#hearbeatDMGOverlay")[0].style.background = "radial-gradient(circle, rgb(255 255 255 / 0%) 27%, rgb(0 145 25) 100%)";
 	}
@@ -343,8 +355,11 @@ async function damage(percent, dhp = null){
 		$("#hearbeatDMGOverlay")[0].style.background = "radial-gradient(circle, rgb(255 255 255 / 0%) 27%, rgb(145 0 0) 100%)";
 	}
 	
-	let duration = 1+damage/100+(1 - percent);
-	$("#hearbeatDMGOverlay")[0].style.animation = "fadeOut "+duration+"s";
+	let duration = 1+damage/1000+(1 - percent);
+	if(game.settings.get('heartbeat', 'wounds'));
+		duration = 1;
+
+	$("#hearbeatDMGOverlay")[0].style.animation = "HeartBeatFadeOut "+duration+"s";
 	await delay(duration*1000);
 	$("#hearbeatDMGOverlay")[0].style.animation = "";
 	
@@ -476,9 +491,10 @@ function setheartbeat(dhp = null, token = null, source = null){
 	}
 
 	//add canvas blur and brightness
-	if(percent >= game.settings.get('heartbeat', 'start_heartbeat_offset')/100 && percent != 0){
+	if(percent <= game.settings.get('heartbeat', 'start_heartbeat_offset')/100 && percent != 0){
 		let blurvalue = (1-percent*2); // value in px
-		let brightnessvalue = 1 - (0.8 - percent); // value in px
+		let brightnessvalue = 1 - (0.8-percent); // value in px
+		ui.notifications.notify("brightness" + brightnessvalue);
 		let red_overlayvalue = (1-percent*2); 
 		//console.log("Hearbeat | " + percent);
 		//console.log("Hearbeat | Blurvalue:" + blurvalue);
