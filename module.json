@@ -2,7 +2,7 @@
 	"name": "heartbeat",
 	"title": "Heartbeat",
 	"description": "Make hp changes exiting and immersive!",
-	"version": "10.1",
+	"version": "10.2",
 	"author": "Handyfon#1802",
 	"esmodules": ["heartbeat.js"],
 	"styles": ["heartbeat.css"],
@@ -11,5 +11,5 @@
     "manifest": "https://raw.githubusercontent.com/Handyfon/heartbeat/master/module.json",
     "download": "https://github.com/Handyfon/heartbeat/raw/main/heartbeat.zip",
 	"minimumCoreVersion": "10",
-	"compatibleCoreVersion": "10"
+	"compatibleCoreVersion": "11"
 }

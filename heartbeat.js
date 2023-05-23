@@ -1,6 +1,15 @@
 Hooks.once('init', function() {
-	const reloadSettings = debounce(() => setheartbeat(), 100);
+	const reloadSettings = debounce(() => setheartbeat(null,null,'init'), 100);
 	//console.log("Heartbeat found...");
+	game.settings.register('heartbeat', 'enabledForThisUser', {
+        name: 'Enabled for this user',
+        hint: 'If heartbeat should be enabled for this user',
+        scope: 'client',
+        config: true,
+        default: true,
+        type: Boolean,
+		onChange: () => {reloadSettings();},
+    });
 	game.settings.register('heartbeat', 'enableTakeDamageffect', {
         name: 'Enable Damage Animation',
         hint: 'Enables the animation that is played when a character takes damage or regains hp',
@@ -37,9 +46,18 @@ Hooks.once('init', function() {
         type: Boolean,
 		onChange: () => {reloadSettings();},
     });
+	game.settings.register('heartbeat', 'wounds', {
+        name: 'Invert HP (More HP BAD)',
+        hint: 'Use a different calculation where more hp == bad for systems like swade',
+        scope: 'world',
+        config: true,
+        default: false,
+        type: Boolean,
+		onChange: () => {reloadSettings();},
+    });	
 	game.settings.register('heartbeat', 'hpPath', {
         name: 'HP Data Path',
-        hint: 'This is the path that points towards the HP value of an actor (standard DnD5e: system.attributes.hp)',
+        hint: 'This is the path that points towards the HP value of an actor (standard DnD5e: system.attributes.hp.value)',
         scope: 'world',
         config: true,
         default: "system.attributes.hp.value",
@@ -48,7 +66,7 @@ Hooks.once('init', function() {
     });	
 	game.settings.register('heartbeat', 'maxhpPath', {
         name: 'Max HP Data Path',
-        hint: 'This is the path that points towards the HP value of an actor (standard DnD5e: system.attributes.hp)',
+        hint: 'This is the path that points towards the HP value of an actor (standard DnD5e: system.attributes.hp.max)',
         scope: 'world',
         config: true,
         default: "system.attributes.hp.max",
@@ -148,6 +166,15 @@ Hooks.once('init', function() {
         type: Boolean,
 		onChange: () => {reloadSettings();},
     });
+	game.settings.register('heartbeat', 'tokenDeath', {
+        name: 'Token Death (Black Screen)',
+        hint: 'The Screen will be black and white once a character reaches 0 hp',
+        scope: 'world',
+        config: true,
+        default: true,
+        type: Boolean,
+		onChange: () => {reloadSettings();},
+    });
 	game.settings.register('heartbeat', 'sfx_massivedamage', {
         name: 'Massive Damage Sound',
         hint: 'path to the sound',
@@ -188,17 +215,72 @@ Hooks.once('ready', function() {
 		$('body').append('<img class="hearbeat" id="heartbeat" src="'+ game.settings.get('heartbeat', 'bloodOverlay_path') +'" style="pointer-events:none; position: absolute;width: inherit;height: inherit;opacity: 0.0;">')
 	if(game.settings.get('heartbeat', 'enableDamageOverlay'))
 		$('body').append('<img class="hearbeatDMGOverlay" id="hearbeatDMGOverlay" style="pointer-events:none; position: absolute;width: inherit;height: inherit;opacity: 0.0;">')
-	setheartbeat();
+	
+	if(canvas.tokens.controlled[0] != undefined){
+		setheartbeat(null,canvas.tokens.controlled[0], 'ready');
+	}
+
+	//CREATE HEARTBEAT BUTTON
+	// Create the button element
+	const heartbeatButton = document.createElement('button');
+	heartbeatButton.setAttribute('type', 'button');
+	heartbeatButton.setAttribute('id', 'heartbeat-button');
+	heartbeatButton.textContent = ''; // Set the button's text content
+	heartbeatButton.title = "";
+	heartbeatButton.onclick = function() {
+		toggleHeartBeatForCurrentUser(); // Call your toggleHeartBeatForCurrentUser function
+	};
+	// Add the button to the document
+	$("#sidebar")[0].append(heartbeatButton);
+	if(game.settings.get('heartbeat', 'enabledForThisUser'))
+		changeHeartBeatButtton('on');
+	else{
+		changeHeartBeatButtton('off');
+	}
+	
 });
+function toggleHeartBeatForCurrentUser(){
+	let newval = !game.settings.get('heartbeat', 'enabledForThisUser');
+	game.settings.set('heartbeat', 'enabledForThisUser', newval);
+	if(newval){
+		changeHeartBeatButtton('on');
+		//TODO: Try enabling heartbeat
+	}
+	else{
+		disableHeartBeat();
+		changeHeartBeatButtton('off');
+	}
+}
+function changeHeartBeatButtton(enableDisable) {
+	let button = $('#heartbeat-button')[0];
+	if(button == undefined)return;
+	if (enableDisable === 'on') {
+	  button.textContent = '❤️'; // Set the button's text content
+	  button.title = 'Heartbeat Active - Click to disable';
+	}
+	if (enableDisable === 'beat') {
+	  button.textContent = '💓'; // Set the button's text content
+	  button.title = 'Heartbeat Beating';
+	  //button.classList.add('animatedHeartBeatButton');
+	  //button.classList.remove('animatedHeartBeatButton');
+	}
+	if (enableDisable === 'off') {
+	  button.textContent = '🖤'; // Set the button's text content
+	  button.title = 'Heartbeat Inactive - Click to enable';
+	}
+	if (enableDisable === 'special') {
+		button.textContent = '💛'; // Set the button's text content
+		button.title = 'Heartbeat Inactive - Disabled for this actor';
+	  }
+  }
 Hooks.on("controlToken", (t, e) => {
 	if(!game.user.isGM)return;
 	if(game.settings.get('heartbeat', 'gmPreview'))
-		if(t.document.disposition == -1 && game.settings.get('heartbeat', 'gmPreviewIgnoreNPC')){
+		if(t.actor.type != 'character' && game.settings.get('heartbeat', 'gmPreviewIgnoreNPC')){
 			disableHeartBeat();
 			return;
 		}
-
-		setheartbeat(null, t);
+	setheartbeat(null, t, 'controlToken');
 });
 Hooks.on("sightRefresh", (t, e) => {
 	if(game.user.isGM && game.settings.get('heartbeat', 'gmPreview')){
@@ -207,28 +289,40 @@ Hooks.on("sightRefresh", (t, e) => {
 	}
 });
 Hooks.on('updateActor', (actor, updates, options, userId) => {
+	if(!game.settings.get('heartbeat', 'enabledForThisUser'))return;
 	let damageTaken = 0;
 	if(options.dhp) damageTaken = options.dhp;
 	if(options.damageTaken) damageTaken = options.damageTaken;
-	
+	let tokens = canvas.tokens.controlled;
 	if(game.user.isGM && game.settings.get('heartbeat', 'gmPreview')){
-		let tokens = canvas.tokens.controlled;
-		if(tokens.length > 1) return;
+		if(tokens.length > 1 || tokens.length == 0) return;
 		else
-			if(tokens[0].document.disposition == -1 && game.settings.get('heartbeat', 'gmPreviewIgnoreNPC')){
+			if(actor.type != 'character' && game.settings.get('heartbeat', 'gmPreviewIgnoreNPC')){
 			disableHeartBeat();
 			return;
 			}
-			setheartbeat(damageTaken, tokens[0]);
+			setheartbeat(damageTaken, tokens[0], 'updateActor');
 	}
-	else if(game.user.character.id == actor.id){
-		//console.log("Hearbeat | Your actor has been updated: "+ actor.name);
-		setheartbeat(damageTaken);
+	else if(tokens.length == 1 && canvas.tokens.controlled[0].actor.actorlink == false){ //IF User controlled token == users character
+		console.log("Hearbeat | Your selected token has been updated: "+ actor.name);
+		setheartbeat(damageTaken, tokens[0], 'updateActor2 - Controlled Token');
+	}
+	else if(game.user.character!=undefined){
+		if(game.user.character.id == actor.id){
+			console.log("Hearbeat | Your character has been updated: "+ actor.name);
+			setheartbeat(damageTaken, null, 'updateActor3 - UserCharacter');
+		}
 	}
 });
 function disableHeartBeat(){
+	console.log("Heatbeat | Overlay disabled");
 	document.getElementById("heartbeat").style.opacity = 0;
 	$("#board")[0].style.filter = '';
+	if(game.settings.get('heartbeat', 'enabledForThisUser'))
+		changeHeartBeatButtton('on');
+	game.audio.playing.forEach(function(sound) {
+		if(sound.src == game.settings.get('heartbeat', 'sfx_heartbeat'))sound.stop()
+	});
 }
 
 const delay = ms => new Promise(res => setTimeout(res, ms));
@@ -263,15 +357,36 @@ var deep_value = function(obj, path){
     return obj;
 };
 
-function setheartbeat(dhp = null, token = null){
-	if(game.user.character == null && token == null)return;
+function setheartbeat(dhp = null, token = null, source = null){
+	console.log("SETHEARTBEAT " + source);
+	if(!game.settings.get('heartbeat', 'enabledForThisUser'))return;
 	let character;
-	if(token != null) character = token.actor;
-	if(game.user.character != null) character = game.user.character;
+	if(token != null) character = token.actor; //IF character is the controlled character
+	if(game.user.character != null) character = game.user.character; //IF character is the users character
+	if(game.user.character == null && token == null){
+		if(canvas.tokens.controlled.length == 1){
+			character = canvas.tokens.controlled[0].actor;
+		}
+		else{
+			return;
+		}
+	};
 	let path = game.settings.get('heartbeat', 'hpPath');
 	let maxhpPath = game.settings.get('heartbeat', 'maxhpPath');
 	let hp = deep_value(character, path);
 	let maxHp = deep_value(character, maxhpPath);
+	let woundSystem = game.settings.get('heartbeat', 'wounds');
+	let effect_multiplier = game.settings.get('heartbeat', 'effect_multiplier');
+	if(maxHp == 0){
+		disableHeartBeat();
+		changeHeartBeatButtton('special');
+		return;
+	}
+	if(character.type != 'character' && character.type != 'npc'){
+		disableHeartBeat();
+		changeHeartBeatButtton('special');
+		return;
+	}
 	if(hp == null){
 	ui.notifications.warn("Heartbeat | The HP Data Path seems to be incorrect, check your module settings to fix this");
 	return;
@@ -280,16 +395,78 @@ function setheartbeat(dhp = null, token = null){
 	ui.notifications.warn("Heartbeat | The MAX-HP Data Path seems to be incorrect, check your module settings to fix this");
 	maxHp = 100;
 	}
+	changeHeartBeatButtton('beat');
 	let percent = hp / maxHp;
+
 	if(dhp){
 		damage(percent, dhp);
 	}
 	if(!game.settings.get('heartbeat', 'enableTakeDamageffect'))return;
 	//console.log("Hearbeat | " + percent);
-	document.getElementById("heartbeat").style.opacity = game.settings.get('heartbeat', 'effect_multiplier') - percent;
 	let blur = 'blur(' +game.settings.get("heartbeat", "blood_blur")+ 'px)';
 	document.getElementById("heartbeat").style.filter = blur;
 
+	if(woundSystem){
+		//add canvas blur and brightness
+		if(percent >= game.settings.get('heartbeat', 'start_heartbeat_offset')/100 && percent != 0){
+			document.getElementById("heartbeat").style.opacity = percent;
+			//if heartbeat above % enable animation
+			if(percent >= game.settings.get('heartbeat', 'heartbeat_offset')/100 && percent < 1){
+				document.getElementById("heartbeat").classList.add("animated")
+			}
+			else{
+				document.getElementById("heartbeat").classList.remove("animated")
+			}
+			if(percent != 1 && percent != 0){
+				//0 == 100%
+				//ui.notifications.notify("percent " + percent);
+				let blurvalue = percent*(2*effect_multiplier); // value in px
+				let brightnessvalue = 1-percent*effect_multiplier; // value in % of 1
+				let red_overlayvalue = 1-percent;  // value in % of 1
+				//console.log("Hearbeat | " + percent);
+				//console.log("Hearbeat | Blurvalue:" + blurvalue);
+				//console.log("Hearbeat | Brightnessvalue:" + brightnessvalue);
+				//console.log('blur('+blurvalue+'px ' + 'brightness('+brightnessvalue+')');
+				let style = '';
+				if(game.settings.get('heartbeat', 'canvasBlur')){
+					style += 'blur('+blurvalue+'px )';
+				}
+				if(game.settings.get('heartbeat', 'canvasBrightness')){
+					style += 'brightness('+brightnessvalue+')';
+				}
+				$("#board")[0].style.filter = style;
+			}
+			else{
+				$("#board")[0].style.filter = '';
+			}
+		}
+		else{
+			$("#board")[0].style.filter = '';
+			document.getElementById("heartbeat").style.opacity = 0;
+		}
+		//play sound if low on health
+		let soundsrc = game.settings.get('heartbeat', 'sfx_heartbeat');
+		if(percent >= game.settings.get('heartbeat', 'heartbeat_offset')/100 && percent != 1){//play sound
+			let alreadyplaying = false;
+			game.audio.playing.forEach(function(sound) {
+			if(sound.src == game.settings.get('heartbeat', 'sfx_heartbeat')) alreadyplaying = true;
+			});
+			if(!alreadyplaying)
+				AudioHelper.play({src:soundsrc, volume: game.settings.get('heartbeat', 'sfx_heartbeat_vol'), autoplay: true, loop: true }, false);
+		}
+		else{
+			game.audio.playing.forEach(function(sound) {
+				if(sound.src == game.settings.get('heartbeat', 'sfx_heartbeat'))sound.stop()
+			});
+		}
+		//unconscious
+		if(percent == 1 && game.settings.get('heartbeat', 'tokenDeath')){
+			$("#board")[0].style.filter = 'grayscale(1) brightness(0.2)';
+			$("#heartbeat")[0].style.filter = 'blur(0) grayscale(1) brightness(0.1)';
+		}
+		return;
+	}
+	document.getElementById("heartbeat").style.opacity = game.settings.get('heartbeat', 'effect_multiplier') - percent;
 	//if heartbeat below % enable animation
 	if(percent <= game.settings.get('heartbeat', 'heartbeat_offset')/100 && percent != 0){
 		document.getElementById("heartbeat").classList.add("animated")
@@ -299,7 +476,7 @@ function setheartbeat(dhp = null, token = null){
 	}
 
 	//add canvas blur and brightness
-	if(percent < game.settings.get('heartbeat', 'start_heartbeat_offset')/100 && percent != 0){
+	if(percent >= game.settings.get('heartbeat', 'start_heartbeat_offset')/100 && percent != 0){
 		let blurvalue = (1-percent*2); // value in px
 		let brightnessvalue = 1 - (0.8 - percent); // value in px
 		let red_overlayvalue = (1-percent*2); 
@@ -336,7 +513,7 @@ function setheartbeat(dhp = null, token = null){
 		});
 	}
 	//unconscious
-	if(percent == 0){
+	if(percent == 0 && game.settings.get('heartbeat', 'tokenDeath')){
 		$("#board")[0].style.filter = 'grayscale(1) brightness(0.2)';
 		$("#heartbeat")[0].style.filter = 'blur(0) grayscale(1) brightness(0.1)';
 	}

@@ -28,6 +28,9 @@
 img.animated {
     animation: heartbeat 1s infinite;
 }
+.animatedHeartBeatButton {
+  animation: heartbeat 1s infinite;
+}
 @-webkit-keyframes fadeOut {
     0% { opacity: 1;}
 	10% { opacity: 1;}
@@ -44,8 +47,24 @@ img#heartbeat {
     animation-fill-mode: forwards;
 }
 .heartbeatTakeDamage{
-	animation: fadeOut 1s;
+	animation: fadeOut 2s;
 }
 img#hearbeatDMGOverlay {
     background: radial-gradient(circle, rgb(255 255 255 / 0%) 27%, rgb(145 0 0) 100%);
+    background:red;
+}
+button#heartbeat-button {
+  background: transparent;
+  border-radius: 0;
+  border: 0;
+  font-size: 1rem;
+  left: calc(0px - 1.4rem);
+  line-height: normal;
+  margin: 0;
+  padding: 0;
+  position: absolute;
+  top: calc(35px - 1.4rem);
+  width: auto;
+  z-index: 61;
+  pointer-events: all;
 }
