@@ -58,12 +58,10 @@ button#heartbeat-button {
   border-radius: 0;
   border: 0;
   font-size: 1rem;
-  left: calc(0px - 1.4rem);
   line-height: normal;
   margin: 0;
   padding: 0;
   position: absolute;
-  top: calc(35px - 1.4rem);
   width: auto;
   z-index: 61;
   pointer-events: all;

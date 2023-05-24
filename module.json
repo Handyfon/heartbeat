@@ -2,7 +2,7 @@
 	"name": "heartbeat",
 	"title": "Heartbeat",
 	"description": "Make hp changes exiting and immersive!",
-	"version": "10.2.3",
+	"version": "10.2.4",
 	"author": "Handyfon#1802",
 	"esmodules": ["heartbeat.js"],
 	"styles": ["heartbeat.css"],
