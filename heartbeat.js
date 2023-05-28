@@ -97,6 +97,15 @@ Hooks.once('init', function() {
         type: String,
 		onChange: () => {reloadSettings();},
     });
+	game.settings.register('heartbeat', 'pcTypeName', {
+		name: 'PC Type Name',
+		hint: "If your system uses a different type to refer to player characters than 'character', enter it here.",
+		scope: 'world',
+		config: true,
+        default: "character",
+        type: String,
+		onChange: () => {reloadSettings();},
+	});
 	game.settings.register('heartbeat', 'start_heartbeat_offset', {
         name: 'Start Heartbeat HP%',
         hint: 'Defines at which percentage the overlay should start to appear',
@@ -319,11 +328,13 @@ function changeHeartBeatButtton(enableDisable) {
   }
 Hooks.on("controlToken", (t, e) => {
 	if(!game.user.isGM)return;
-	if(game.settings.get('heartbeat', 'gmPreview'))
-		if(t.actor.type != 'character' && game.settings.get('heartbeat', 'gmPreviewIgnoreNPC')){
+	if(game.settings.get('heartbeat', 'gmPreview')) {
+		const charType = game.settings.get('heartbeat', 'pcTypeName');
+		if(t.actor.type != charType && game.settings.get('heartbeat', 'gmPreviewIgnoreNPC')){
 			disableHeartBeat();
 			return;
 		}
+	}
 	setheartbeat(null, t, 'controlToken');
 });
 Hooks.on("sightRefresh", (t, e) => {
@@ -340,11 +351,13 @@ Hooks.on('updateActor', (actor, updates, options, userId) => {
 	let tokens = canvas.tokens.controlled;
 	if(game.user.isGM && game.settings.get('heartbeat', 'gmPreview')){
 		if(tokens.length > 1 || tokens.length == 0) return;
-		else
-			if(actor.type != 'character' && game.settings.get('heartbeat', 'gmPreviewIgnoreNPC')){
+		else {
+			const pcTypeName = game.settings.get('heartbeat', 'pcTypeName');
+			if(actor.type != pcTypeName && game.settings.get('heartbeat', 'gmPreviewIgnoreNPC')){
 			disableHeartBeat();
 			return;
 			}
+		}
 			setheartbeat(damageTaken, tokens[0], 'updateActor');
 	}
 	else if(tokens.length == 1 && canvas.tokens.controlled[0].actor.actorlink == false){ //IF User controlled token == users character
@@ -428,12 +441,13 @@ function setheartbeat(dhp = null, token = null, source = null){
 	let maxHp = deep_value(character, maxhpPath);
 	let woundSystem = game.settings.get('heartbeat', 'wounds');
 	let effect_multiplier = game.settings.get('heartbeat', 'effect_multiplier');
+	const pcCharType = game.settings.get('heartbeat', 'pcTypeName') ? game.settings.get('heartbeat', 'pcTypeName') : 'character';
 	if(maxHp == 0){
 		disableHeartBeat();
 		changeHeartBeatButtton('special');
 		return;
 	}
-	if(character.type != 'character' && character.type != 'npc'){
+	if(character.type != pcCharType && character.type != 'npc'){
 		disableHeartBeat();
 		changeHeartBeatButtton('special');
 		return;
