@@ -17,7 +17,6 @@ Customize at whish percentages the effects start<br>
 - Custom Overlay<br>
 - Configure how strong the effects are<br>
 - Disable any effects you dislike<br>
-- This module is not available in the module browser until the end of the month.
 <br>
 
 <h1>Images and Gifs:</h1>
