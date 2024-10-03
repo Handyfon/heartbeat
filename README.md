@@ -1,4 +1,6 @@
-<b>SUPPORT: https://discord.gg/gs5hAgxBx3</b></br>
+
+<b>SUPPORT: https://discord.gg/gs5hAgxBx![Heartbeat](https://github.com/user-attachments/assets/b0842b12-ddd9-46fe-a65b-cee167efb1a8)
+3</b></br>
 Make hp changes exiting and immersive!
 
 Adds a video game like overlay when your character gets hurt and makes taking damage more dramatic and fun for your players!
