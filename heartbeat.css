@@ -1,28 +1,21 @@
-@keyframes heartbeat
-{
-  0%
-  {
-    transform: scale( 1.05 );
+@keyframes heartbeat {
+  0% {
+    transform: scale(1.1); /* Slight zoom-in by default */
   }
-  20%
-  {
-    transform: scale( 1 );
+  20% {
+    transform: scale(1.05);
   }
-  40%
-  {
-    transform: scale( 1.05 );
+  40% {
+    transform: scale(1.1);
   }
-  60%
-  {
-    transform: scale( 1 );
+  60% {
+    transform: scale(1.05);
   }
-  80%
-  {
-    transform: scale( 1.05 );
+  80% {
+    transform: scale(1.1);
   }
-  100%
-  {
-    transform: scale( 1.05 );
+  100% {
+    transform: scale(1.1); /* Ensure it stays zoomed in slightly */
   }
 }
 img.animated {
@@ -65,4 +58,12 @@ button#heartbeat-button {
   width: auto;
   z-index: 61;
   pointer-events: all;
+}
+.HeartbeatSplatterImage{
+  border:unset;
+  filter:opacity(0.5);
+}
+.HeartbeatScratchImage {
+  border: unset;
+  mix-blend-mode: screen;
 }

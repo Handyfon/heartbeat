@@ -1,5 +1,5 @@
 <b>SUPPORT: https://discord.gg/gs5hAgxBx3</b></br>
-Make hp changes exciting and immersive!
+Make hp changes exiting and immersive!
 
 Adds a video game like overlay when your character gets hurt and makes taking damage more dramatic and fun for your players!
 You can preview the module as a GM without logging in as a player :D
@@ -17,6 +17,7 @@ Customize at whish percentages the effects start<br>
 - Custom Overlay<br>
 - Configure how strong the effects are<br>
 - Disable any effects you dislike<br>
+- This module is not available in the module browser until the end of the month.
 <br>
 
 <h1>Images and Gifs:</h1>
