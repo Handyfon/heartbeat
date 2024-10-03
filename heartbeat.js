@@ -479,12 +479,11 @@ async function damage(percent, dhp = null, maxHp) {
     $("#hearbeatDMGOverlay")[0].style.animation = "HeartBeatFadeOut " + duration + "s";
     await delay(duration * 1000);
     $("#hearbeatDMGOverlay")[0].style.animation = "";
-
+	
     if (maxHp > 0 && dhp != null && dhp <= 0) {
         let damagePercentage = (Math.abs(dhp) / maxHp) * 100;
-
-        // Spawn splatter only if at least 20% damage is taken
-        if (damagePercentage >= 20 && game.settings.get('heartbeat', 'enableScratch')) {
+        let splatterThreshold = game.settings.get('heartbeat', 'splatterThreshold');
+        if (damagePercentage >= splatterThreshold && game.settings.get('heartbeat', 'enableScratch')) {
             spawnSplatter();
         }
     }
