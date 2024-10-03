@@ -1,4 +1,5 @@
 # Heartbeat - Immersive HP Changes for Foundry VTT
+![Heartbeat](https://github.com/user-attachments/assets/943fca1c-07f4-47dd-9fcb-209a92e7c16c)
 
 **Make HP changes exciting and immersive!**
 
