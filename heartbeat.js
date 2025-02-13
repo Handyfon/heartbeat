@@ -483,7 +483,7 @@ async function damage(percent, dhp = null, maxHp) {
     if (maxHp > 0 && dhp != null && dhp <= 0) {
         let damagePercentage = (Math.abs(dhp) / maxHp) * 100;
         let splatterThreshold = game.settings.get('heartbeat', 'splatterThreshold');
-        if (damagePercentage >= splatterThreshold && game.settings.get('heartbeat', 'enableScratch')) {
+        if (damagePercentage >= splatterThreshold && game.settings.get('heartbeat', 'enableSplatter')) {
             spawnSplatter();
         }
     }
