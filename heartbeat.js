@@ -1,5 +1,5 @@
 Hooks.once('init', function() {
-	const reloadSettings = debounce(() => setheartbeat(null,null,'init'), 100);
+	const reloadSettings = foundry.utils.debounce(() => setheartbeat(null,null,'init'), 100);
 	//console.log("Heartbeat found...");
 	game.settings.register('heartbeat', 'enabledForThisUser', {
         name: 'Enabled for this user',
