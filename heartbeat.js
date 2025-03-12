@@ -1,4 +1,3 @@
-import { systemPresets } from "./systemSettings.js";
 Hooks.once('init', function() {
 	const reloadSettings = foundry.utils.debounce(() => setheartbeat(null,null,'init'), 100);
 	//console.log("Heartbeat found...");
@@ -857,31 +856,28 @@ function removeSplatterImage(splatterImg) {
         splatterImages = splatterImages.filter(img => img !== splatterImg);
     }
 }
-
 Hooks.once('ready', async function() {
+    if (!game.user.isGM) return;
+
+    const systemPresets = await loadSystemPresets();
     const currentSystem = game.system.id;
     const defaultHpPath = "system.attributes.hp.value";
     const defaultMaxHpPath = "system.attributes.hp.max";
     const defaultActorTypes = "character,npc";
 
     const hasSeenRecommendation = game.settings.get('heartbeat', 'hasSeenRecommendation');
-    if (hasSeenRecommendation) return;
-	if(currentSystem == "dnd5e") return;
-	
+    if (hasSeenRecommendation || currentSystem === "dnd5e") return;
+
     const currentHpPath = game.settings.get('heartbeat', 'hpPath');
     const currentMaxHpPath = game.settings.get('heartbeat', 'maxhpPath');
     const currentActorTypes = game.settings.get('heartbeat', 'additionalActorTypes');
 
     let preset = systemPresets[currentSystem] || null;
-    let requiresSetup = (currentSystem !== "dnd5e" && currentHpPath === defaultHpPath && currentMaxHpPath === defaultMaxHpPath && currentActorTypes === "mecha");
+    let requiresSetup = !preset;
 
-    // Retrieve available actor types dynamically
     let availableActorTypes = Object.keys(game.model.Actor || {});
-
-    // Get localized actor type names
     let translatedActors = game.i18n.translations.ACTOR || {};
 
-    // Generate checkboxes dynamically and localize names
     let actorTypeCheckboxes = availableActorTypes.map(type => {
         let localizedLabel = translatedActors[`Type${type.charAt(0).toUpperCase() + type.slice(1)}`] || type.charAt(0).toUpperCase() + type.slice(1);
         let isChecked = preset ? preset.allowedActorTypes.includes(type) : false;
@@ -891,7 +887,6 @@ Hooks.once('ready', async function() {
                 </label><br>`;
     }).join("");
 
-    // Construct the message dynamically
     let messageContent = preset
         ? `<p>The detected system (<strong>${preset.name}</strong>) has a recommended configuration.</p>
            <p>Would you like to apply it?</p>
@@ -901,9 +896,8 @@ Hooks.once('ready', async function() {
            <p><strong>Current Max HP Path:</strong></p>
            <p>${currentMaxHpPath} → <strong>${preset.maxHpPath}</strong></p>`
         : `<p>Your system (<strong>${currentSystem}</strong>) does not have a recommended preset.</p>
-      	   <p class="HBWarnText">You may need to manually configure the HP and Max HP paths in the module settings.</p>
-		   <p>Please select which type of actors should be affected by Heartbeat below.<p>  
-		   `;
+           <p class="HBWarnText">You may need to manually configure the HP and Max HP paths in the module settings.</p>
+           <p>Please select which type of actors should be affected by Heartbeat below.</p>`;
 
     new Dialog({
         title: "Heartbeat Configuration",
@@ -939,3 +933,20 @@ Hooks.once('ready', async function() {
         default: "yes"
     }).render(true);
 });
+
+
+async function loadSystemPresets() {
+    const githubURL = "https://raw.githubusercontent.com/Handyfon/heartbeat/master/systemSettings.json";
+    
+    try {
+        const response = await fetch(githubURL, { cache: "no-cache" });
+        if (!response.ok) throw new Error(`HTTP Error: ${response.status}`);
+
+        const json = await response.json();
+        console.log("Heartbeat | Loaded system presets from GitHub.");
+        return json;
+    } catch (error) {
+        console.warn("Heartbeat | Failed to load system presets from GitHub. Defaulting to unsupported system behavior.", error);
+        return {}; // No fallback, just return empty object
+    }
+}
