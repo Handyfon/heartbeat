@@ -276,6 +276,7 @@ Hooks.once('init', function() {
 
 	console.log("Heartbeat enabled!");
 });
+
 Hooks.once('ready', function() {
 	if(game.settings.get('heartbeat', 'enableTakeDamageffect'))
 		$('body').append('<img class="hearbeat" id="heartbeat" src="'+ game.settings.get('heartbeat', 'bloodOverlay_path') +'" style="pointer-events:none; position: absolute;width: inherit;height: inherit;opacity: 0.0;">')
