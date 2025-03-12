@@ -67,3 +67,40 @@ button#heartbeat-button {
   border: unset;
   mix-blend-mode: screen;
 }
+
+.h1HeartBeat {
+  border: unset;
+  color: red;
+  text-align: center;
+  background: #3f0000;
+  font-weight: bold;
+  display: inline-block;
+  padding: 10px 20px;
+  font-size: 2em;
+  border-radius: 10px;
+  width: 100%;
+  animation: heartbeat 1.2s infinite ease-in-out;
+}
+@keyframes heartbeat {
+  0% {
+    transform: scale(1);
+  }
+  20% {
+    transform: scale(0.95);
+  }
+  40% {
+    transform: scale(1);
+  }
+  60% {
+    transform: scale(0.95);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+.HBWarnText {
+  background: #ffa50054;
+  padding: 10px;
+  font-weight: bold;
+  color: #855600;
+}

@@ -1,3 +1,4 @@
+import { systemPresets } from "./systemSettings.js";
 Hooks.once('init', function() {
 	const reloadSettings = foundry.utils.debounce(() => setheartbeat(null,null,'init'), 100);
 	//console.log("Heartbeat found...");
@@ -250,6 +251,15 @@ Hooks.once('init', function() {
 		type: Boolean,
 		onChange: () => {reloadSettings();},
 	});
+	game.settings.register('heartbeat', 'disableSplatterForGM', {
+		name: 'Disable Splatter for GM',
+		hint: 'If enabled, GMs will not see the splatter effects. Useful to not have dozens of splatters when juggling monsters in combat.',
+		scope: 'world',
+		config: true,
+		default: true,
+		type: Boolean,
+		onChange: () => { reloadSettings(); },
+	});
 	game.settings.register('heartbeat', 'splatterThreshold', {
 		name: 'Splatter Threshold (%)',
 		hint: 'The minimum percentage of maximum HP lost in a single hit to trigger the splatter effect.',
@@ -273,7 +283,47 @@ Hooks.once('init', function() {
 		type: Number,
 		onChange: () => {reloadSettings();},
 	});
-
+	game.settings.register('heartbeat', 'enableScreenShake', {
+		name: 'Enable Screen Shake',
+		hint: 'Shakes the screen briefly when a character takes damage.',
+		scope: 'world',
+		config: true,
+		default: true,
+		type: Boolean,
+		onChange: () => { reloadSettings(); },
+	});
+	game.settings.register('heartbeat', 'screenShakeStrength', {
+		name: 'Screen Shake Strength',
+		hint: 'Determines the base intensity of screen shake when taking damage.',
+		scope: 'world',
+		config: true,
+		default: 5,
+		type: Number,
+		range: {
+			min: 0,
+			max: 10,
+			step: 0.1
+		},
+		onChange: () => { reloadSettings(); },
+	});
+	
+	game.settings.register('heartbeat', 'scaleScreenShakeWithHP', {
+		name: 'Scale Screen Shake with HP Loss',
+		hint: 'If enabled, the shake intensity scales based on the percentage of HP lost.',
+		scope: 'world',
+		config: true,
+		default: true,
+		type: Boolean,
+		onChange: () => { reloadSettings(); },
+	});
+	game.settings.register('heartbeat', 'hasSeenRecommendation', {
+		scope: 'world',
+		name: 'Has seen recommended Settings',
+		hint: 'If enabled, you will no longer see recommended settings. Enabled automatically.',
+		config: true,
+		default: false,
+		type: Boolean
+	});
 	console.log("Heartbeat enabled!");
 });
 
@@ -357,7 +407,7 @@ function changeHeartBeatButtton(enableDisable) {
 	}
 	if (enableDisable === 'special') {
 		button.textContent = '💛'; // Set the button's text content
-		button.title = 'Heartbeat Inactive - Disabled for this actor';
+		button.title = 'Heartbeat Inactive - Disabled for this actor type';
 	  }
   }
 Hooks.on("controlToken", (t, e) => {
@@ -392,6 +442,14 @@ function getNewHPValue(actor, updates, hpPath) {
 Hooks.on('preUpdateActor', (actor, updates, options, userId) => {
     if (!game.settings.get('heartbeat', 'enabledForThisUser')) return;
 
+    const controlledTokens = canvas.tokens.controlled.map(t => t.actor?.id);
+    if (canvas.tokens.controlled.length > 1) {// If more than one actor is selected
+        return;
+    }
+    if (canvas.tokens.controlled[0].actor.id != actor.id) {// If the player controls a different token return
+        return;
+    }
+
     // Get the HP path from settings
     let hpPath = game.settings.get('heartbeat', 'hpPath');
 
@@ -403,7 +461,12 @@ Hooks.on('preUpdateActor', (actor, updates, options, userId) => {
 });
 Hooks.on('updateActor', (actor, updates, options, userId) => {
     if (!game.settings.get('heartbeat', 'enabledForThisUser')) return;
-
+    if (canvas.tokens.controlled.length > 1) {// If more than one actor is selected
+        return;
+    }
+    if (canvas.tokens.controlled[0].actor.id != actor.id) {// If the player controls a different token return
+        return;
+    }
     if (options.oldHP == null) return;
     let hpPath = game.settings.get('heartbeat', 'hpPath');
 
@@ -446,13 +509,15 @@ function isActorTypeAllowed(actor) {
     return allowedActorTypes.includes(actor.type.toLowerCase());
 }
 function disableHeartBeat(){
+	
 	console.log("Heatbeat | Overlay disabled");
 	document.getElementById("heartbeat").style.opacity = 0;
 	$("#board")[0].style.filter = '';
-	if(game.settings.get('heartbeat', 'enabledForThisUser'))
-		changeHeartBeatButtton('on');
+	if(!game.settings.get('heartbeat', 'enabledForThisUser'))
+		changeHeartBeatButtton('off');
 	game.audio.playing.forEach(function(sound) {
 		if(sound.src == game.settings.get('heartbeat', 'sfx_heartbeat'))sound.stop()
+			
 	});
 }
 
@@ -463,6 +528,21 @@ async function damage(percent, dhp = null, maxHp) {
     // Invert damage overlay if setting is enabled
     if (game.settings.get('heartbeat', 'invertDamageOverlay'))
         dhp = -dhp;
+
+
+	if (dhp < 0) {
+		let baseStrength = game.settings.get('heartbeat', 'screenShakeStrength');
+		let scaleWithHP = game.settings.get('heartbeat', 'scaleScreenShakeWithHP');
+	
+		let damagePercent = Math.abs(dhp) / maxHp;
+		let shakeIntensity = scaleWithHP
+			? Math.max(2, baseStrength * damagePercent)
+			: baseStrength;
+	
+		let shakeDuration = Math.min(400, Math.max(100, damagePercent * 400));
+	
+		screenShake(shakeIntensity, shakeDuration);
+	}
 
     // Set the damage overlay color based on whether HP increased or decreased
     if (dhp > 0) {
@@ -484,7 +564,7 @@ async function damage(percent, dhp = null, maxHp) {
     if (maxHp > 0 && dhp != null && dhp <= 0) {
         let damagePercentage = (Math.abs(dhp) / maxHp) * 100;
         let splatterThreshold = game.settings.get('heartbeat', 'splatterThreshold');
-        if (damagePercentage >= splatterThreshold && game.settings.get('heartbeat', 'enableSplatter')) {
+        if (damagePercentage >= splatterThreshold) {
             spawnSplatter();
         }
     }
@@ -519,7 +599,11 @@ function setheartbeat(damageTaken = null, token = null, source = null){
 	let additionalTypesSetting = game.settings.get('heartbeat', 'additionalActorTypes');
 	let additionalActorTypes = additionalTypesSetting.split(',').map(type => type.trim().toLowerCase()).filter(type => type);
 	let allowedActorTypes = ['character', 'npc', ...additionalActorTypes];
-
+	if (!allowedActorTypes.includes(character.type.toLowerCase())) {//NEW WAY TO CHECK FOR SHEET TYPES
+		disableHeartBeat();
+		changeHeartBeatButtton('special');
+		return;
+	}
 	let path = game.settings.get('heartbeat', 'hpPath');
 	let maxhpPath = game.settings.get('heartbeat', 'maxhpPath');
 	let hp = deep_value(character, path);
@@ -532,14 +616,9 @@ function setheartbeat(damageTaken = null, token = null, source = null){
 		changeHeartBeatButtton('special');
 		return;
 	}
-	if (!allowedActorTypes.includes(character.type.toLowerCase())) {//NEW WAY TO CHECK FOR SHEET TYPES
-		disableHeartBeat();
-		changeHeartBeatButtton('special');
-		return;
-	}
 
 	if(hp == null){
-	ui.notifications.warn("Heartbeat | The HP Data Path seems to be incorrect, check your module settings to fix this");
+	ui.notifications.warn("Heartbeat | The HP Data Path seems to be incorrect. Check your module settings to fix this");
 	console.log(character.system);
 	return;
 	}
@@ -671,7 +750,7 @@ function setheartbeat(damageTaken = null, token = null, source = null){
 		$("#heartbeat")[0].style.filter = 'blur(0) grayscale(1) brightness(0.1)';
 		document.getElementById("heartbeat").style.opacity = 1;
 			//massive damage sound
-		if(game.settings.get('heartbeat', 'enableSplatter') && damageTaken != null) {
+		if(damageTaken != null) {
 			spawnSplatter();
 			spawnSplatter();
 			spawnSplatter();
@@ -682,7 +761,7 @@ function setheartbeat(damageTaken = null, token = null, source = null){
 			if(damageTaken >= maxHp/2 && percent < 0.50 && game.settings.get('heartbeat', 'massiveDamageSound')){
 				foundry.audio.AudioHelper.play({src:game.settings.get('heartbeat', 'sfx_massivedamage'), volume: 0.05, autoplay: true, loop: false }, false);
 				// Massive damage splatter
-				if(game.settings.get('heartbeat', 'enableSplatter')&& damageTaken != null) {
+				if(damageTaken != null) {
 					spawnSplatter();
 				}
 			}
@@ -691,7 +770,7 @@ function setheartbeat(damageTaken = null, token = null, source = null){
 			if(-damageTaken >= maxHp/2 && percent < 0.50 && game.settings.get('heartbeat', 'massiveDamageSound')){
 				foundry.audio.AudioHelper.play({src:game.settings.get('heartbeat', 'sfx_massivedamage'), volume: 0.05, autoplay: true, loop: false }, false);
 				// Massive damage splatter
-				if(game.settings.get('heartbeat', 'enableSplatter')&& damageTaken != null) {
+				if(damageTaken != null) {
 					spawnSplatter();
 				}
 			}
@@ -707,8 +786,30 @@ for(let i = 1; i <= 11; i++) {
     let num = i.toString().padStart(2, '0'); // pad with leading zero
     bloodImages.push(`modules/heartbeat/images/BloodStains/Blood_${num}.png`);
 }
+function screenShake(intensity = 5, duration = 500) {
+    if (!game.settings.get('heartbeat', 'enableScreenShake')) return;
 
+    let body = document.body;
+    let start = Date.now();
+    
+    function shake() {
+        let elapsed = Date.now() - start;
+        if (elapsed >= duration) {
+            body.style.transform = '';
+            return;
+        }
+        let x = (Math.random() * 2 - 1) * intensity;
+        let y = (Math.random() * 2 - 1) * intensity;
+        body.style.transform = `translate(${x}px, ${y}px)`;
+        requestAnimationFrame(shake);
+    }
+
+    shake();
+}
 function spawnSplatter() {
+	if (game.user.isGM && game.settings.get('heartbeat', 'disableSplatterForGM')) return;
+	if(game.settings.get('heartbeat', 'enableSplatter') == false) return;
+
     let randomIndex = Math.floor(Math.random() * bloodImages.length);
     let imgSrc = bloodImages[randomIndex];
     let splatterImg = document.createElement('img');
@@ -750,10 +851,91 @@ function spawnSplatter() {
     }, duration);
 }
 
-
 function removeSplatterImage(splatterImg) {
     if (splatterImg) {
         splatterImg.remove();
         splatterImages = splatterImages.filter(img => img !== splatterImg);
     }
 }
+
+Hooks.once('ready', async function() {
+    const currentSystem = game.system.id;
+    const defaultHpPath = "system.attributes.hp.value";
+    const defaultMaxHpPath = "system.attributes.hp.max";
+    const defaultActorTypes = "character,npc";
+
+    const hasSeenRecommendation = game.settings.get('heartbeat', 'hasSeenRecommendation');
+    if (hasSeenRecommendation) return;
+	if(currentSystem == "dnd5e") return;
+	
+    const currentHpPath = game.settings.get('heartbeat', 'hpPath');
+    const currentMaxHpPath = game.settings.get('heartbeat', 'maxhpPath');
+    const currentActorTypes = game.settings.get('heartbeat', 'additionalActorTypes');
+
+    let preset = systemPresets[currentSystem] || null;
+    let requiresSetup = (currentSystem !== "dnd5e" && currentHpPath === defaultHpPath && currentMaxHpPath === defaultMaxHpPath && currentActorTypes === "mecha");
+
+    // Retrieve available actor types dynamically
+    let availableActorTypes = Object.keys(game.model.Actor || {});
+
+    // Get localized actor type names
+    let translatedActors = game.i18n.translations.ACTOR || {};
+
+    // Generate checkboxes dynamically and localize names
+    let actorTypeCheckboxes = availableActorTypes.map(type => {
+        let localizedLabel = translatedActors[`Type${type.charAt(0).toUpperCase() + type.slice(1)}`] || type.charAt(0).toUpperCase() + type.slice(1);
+        let isChecked = preset ? preset.allowedActorTypes.includes(type) : false;
+        return `<label>
+                    <input type="checkbox" class="actor-type-checkbox" value="${type}" ${isChecked ? "checked" : ""}>
+                    ${localizedLabel}
+                </label><br>`;
+    }).join("");
+
+    // Construct the message dynamically
+    let messageContent = preset
+        ? `<p>The detected system (<strong>${preset.name}</strong>) has a recommended configuration.</p>
+           <p>Would you like to apply it?</p>
+           <hr>
+           <p><strong>Current HP Path:</strong></p>
+           <p>${currentHpPath} → <strong>${preset.hpPath}</strong></p>
+           <p><strong>Current Max HP Path:</strong></p>
+           <p>${currentMaxHpPath} → <strong>${preset.maxHpPath}</strong></p>`
+        : `<p>Your system (<strong>${currentSystem}</strong>) does not have a recommended preset.</p>
+      	   <p class="HBWarnText">You may need to manually configure the HP and Max HP paths in the module settings.</p>
+		   <p>Please select which type of actors should be affected by Heartbeat below.<p>  
+		   `;
+
+    new Dialog({
+        title: "Heartbeat Configuration",
+        content: `
+            <h1 class="h1HeartBeat">Heartbeat</h1>
+            ${messageContent}
+            <p><strong>Select Actor Types to Enable:</strong></p>
+            <form id="actorTypeSelection">
+                ${actorTypeCheckboxes}
+            </form>`,
+        buttons: {
+            yes: {
+                label: "Apply Settings",
+                callback: async (html) => {
+                    let selectedTypes = Array.from(html.find(".actor-type-checkbox:checked")).map(cb => cb.value);
+                    if (preset) {
+                        await game.settings.set('heartbeat', 'hpPath', preset.hpPath);
+                        await game.settings.set('heartbeat', 'maxhpPath', preset.maxHpPath);
+                    }
+                    await game.settings.set('heartbeat', 'additionalActorTypes', selectedTypes.join(', '));
+                    await game.settings.set('heartbeat', 'hasSeenRecommendation', true);
+                    ui.notifications.info(`Applied settings for ${preset ? preset.name : currentSystem}.`);
+                }
+            },
+            no: {
+                label: "Don't ask again",
+                callback: async () => {
+                    await game.settings.set('heartbeat', 'hasSeenRecommendation', true);
+                    ui.notifications.warn(`Default settings remain. Configure manually in module settings if needed.`);
+                }
+            }
+        },
+        default: "yes"
+    }).render(true);
+});
