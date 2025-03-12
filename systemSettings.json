@@ -1,0 +1,32 @@
+{
+    "dnd5e": {
+        "name": "Dungeons & Dragons 5th Edition",
+        "hpPath": "system.attributes.hp.value",
+        "maxHpPath": "system.attributes.hp.max",
+        "allowedActorTypes": ["character", "npc"]
+    },
+    "pf2e": {
+        "name": "Pathfinder 2E",
+        "hpPath": "system.attributes.hp.value",
+        "maxHpPath": "system.attributes.hp.max",
+        "allowedActorTypes": ["character", "npc"]
+    },
+    "pf1": {
+        "name": "Pathfinder 1E",
+        "hpPath": "system.attributes.hp.value",
+        "maxHpPath": "system.attributes.hp.max",
+        "allowedActorTypes": ["character", "npc"]
+    },
+    "swade": {
+        "name": "Savage Worlds Adventure Edition",
+        "hpPath": "system.wounds.value",
+        "maxHpPath": "system.wounds.max",
+        "allowedActorTypes": ["character", "wildcard"]
+    },
+    "knight": {
+        "name": "Knight",
+        "hpPath": "system.sante.value",
+        "maxHpPath": "system.sante.max",
+        "allowedActorTypes": ["knight", "creature", "pnj"]
+    }
+}
