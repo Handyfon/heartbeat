@@ -79,9 +79,9 @@ button#heartbeat-button {
   font-size: 2em;
   border-radius: 10px;
   width: 100%;
-  animation: heartbeat 1.2s infinite ease-in-out;
+  animation: heartbeatText 1.2s infinite ease-in-out;
 }
-@keyframes heartbeat {
+@keyframes heartbeatText {
   0% {
     transform: scale(1);
   }
