@@ -29,4 +29,20 @@ export const systemPresets = {
         "maxHpPath": "system.sante.max",
         "allowedActorTypes": ["knight", "creature", "pnj"]
     },
+    "wfrp4e": {
+        "name": "Warhammer Fantasy Roleplay 4th Edition",
+        "hpPath": "system.status.wounds.value",
+        "maxHpPath": "system.status.wounds.max",
+        "allowedActorTypes": ["base", "character", "npc", "creature", "vehicle"],
+        "settings": {
+            "heartbeat.invertDamageOverlay": true,
+            "heartbeat.wounds": true,
+            "heartbeat.start_heartbeat_offset": 75,
+            "heartbeat.heartbeat_offset": 59,
+            "heartbeat.effect_multiplier": 0.5,
+            "heartbeat.sfx_heartbeat_vol": 0.1,
+            "heartbeat.blood_blur": 5,
+            "heartbeat.splatterThreshold": 1
+        }
+    },
 };
