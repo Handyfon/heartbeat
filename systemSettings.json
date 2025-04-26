@@ -33,7 +33,7 @@
     "name": "Warhammer Fantasy Roleplay 4th Edition",
     "hpPath": "system.status.wounds.value",
     "maxHpPath": "system.status.wounds.max",
-    "allowedActorTypes": ["base", "character", "npc", "creature", "vehicle"],
+    "allowedActorTypes": ["base", "character", "npc", "creature"],
     "settings": {
       "heartbeat.invertDamageOverlay": true,
       "heartbeat.wounds": true,
