@@ -21,7 +21,7 @@
     "name": "Savage Worlds Adventure Edition",
     "hpPath": "system.wounds.value",
     "maxHpPath": "system.wounds.max",
-    "allowedActorTypes": ["character", "wildcard"]
+    "allowedActorTypes": ["character", "wildcard"],
     "settings": {
       "heartbeat.invertDamageOverlay": true,
       "heartbeat.wounds": true,
