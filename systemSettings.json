@@ -25,7 +25,7 @@
     "settings": {
       "heartbeat.invertDamageOverlay": true,
       "heartbeat.wounds": true,
-      "partywatch.wounds": true,
+      "partywatch.wounds": true
     }
   },
   "knight": {
@@ -48,7 +48,7 @@
       "heartbeat.sfx_heartbeat_vol": 0.1,
       "heartbeat.blood_blur": 5,
       "heartbeat.splatterThreshold": 1,
-      "partywatch.wounds": true,
+      "partywatch.wounds": true
     }
   }
 }
