@@ -22,6 +22,11 @@
     "hpPath": "system.wounds.value",
     "maxHpPath": "system.wounds.max",
     "allowedActorTypes": ["character", "wildcard"]
+    "settings": {
+      "heartbeat.invertDamageOverlay": true,
+      "heartbeat.wounds": true,
+      "partywatch.wounds": true,
+    }
   },
   "knight": {
     "name": "Knight",
@@ -42,7 +47,8 @@
       "heartbeat.effect_multiplier": 0.5,
       "heartbeat.sfx_heartbeat_vol": 0.1,
       "heartbeat.blood_blur": 5,
-      "heartbeat.splatterThreshold": 1
+      "heartbeat.splatterThreshold": 1,
+      "partywatch.wounds": true,
     }
   }
 }
