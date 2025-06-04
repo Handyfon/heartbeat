@@ -45,7 +45,7 @@ export const systemPresets = {
             "heartbeat.splatterThreshold": 1
         }
     },
-    "coc7": {
+    "CoC7": {
         "name": "Call of Cthulhu 7th Edition",
         "hpPath": "system.attribs.hp.value",
         "maxHpPath": "system.attribs.hp.max",
