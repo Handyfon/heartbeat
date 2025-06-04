@@ -49,6 +49,6 @@ export const systemPresets = {
         "name": "Call of Cthulhu 7th Edition",
         "hpPath": "system.attribs.hp.value",
         "maxHpPath": "system.attribs.hp.max",
-        "allowedActorTypes": ["character", "npc"]
+        "allowedActorTypes": ["character", "npc", "creature"]
     }
 };
