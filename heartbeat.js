@@ -579,6 +579,11 @@ function deep_value(obj, path) {
     }, obj);
 }
 
+function HB_play(src, volume, loop=false) {
+  const helper = (globalThis.AudioHelper ?? (foundry?.audio?.AudioHelper));
+  if (helper?.play) helper.play({ src, volume, autoplay: true, loop }, false);
+}
+
 function setheartbeat(damageTaken = null, token = null, source = null){
 	//console.log("SETHEARTBEAT " + source);
 	//console.log("damageTaken:" + damageTaken);
@@ -681,7 +686,7 @@ function setheartbeat(damageTaken = null, token = null, source = null){
 			if(sound.src == game.settings.get('heartbeat', 'sfx_heartbeat')) alreadyplaying = true;
 			});
 			if(!alreadyplaying)
-				foundry.audio.AudioHelper.play({src:soundsrc, volume: game.settings.get('heartbeat', 'sfx_heartbeat_vol'), autoplay: true, loop: true }, false);
+				HB_play(soundsrc, game.settings.get('heartbeat', 'sfx_heartbeat_vol'), true);
 		}
 		else{
 			game.audio.playing.forEach(function(sound) {
@@ -736,7 +741,7 @@ function setheartbeat(damageTaken = null, token = null, source = null){
 		if(sound.src == game.settings.get('heartbeat', 'sfx_heartbeat')) alreadyplaying = true;
 		});
 		if(!alreadyplaying)
-			foundry.audio.AudioHelper.play({src:soundsrc, volume: game.settings.get('heartbeat', 'sfx_heartbeat_vol'), autoplay: true, loop: true }, false);
+			HB_play(soundsrc, game.settings.get('heartbeat', 'sfx_heartbeat_vol'), true);
 	}
 	else{
 		game.audio.playing.forEach(function(sound) {
@@ -758,7 +763,7 @@ function setheartbeat(damageTaken = null, token = null, source = null){
 	if(damageTaken){
 		if(damageTaken && game.settings.get('heartbeat', 'invertDamageOverlay')){
 			if(damageTaken >= maxHp/2 && percent < 0.50 && game.settings.get('heartbeat', 'massiveDamageSound')){
-				foundry.audio.AudioHelper.play({src:game.settings.get('heartbeat', 'sfx_massivedamage'), volume: 0.05, autoplay: true, loop: false }, false);
+				HB_play(game.settings.get('heartbeat', 'sfx_massivedamage'), 0.05, false);
 				// Massive damage splatter
 				if(damageTaken != null) {
 					spawnSplatter();
@@ -767,7 +772,7 @@ function setheartbeat(damageTaken = null, token = null, source = null){
 		}
 		else{
 			if(-damageTaken >= maxHp/2 && percent < 0.50 && game.settings.get('heartbeat', 'massiveDamageSound')){
-				foundry.audio.AudioHelper.play({src:game.settings.get('heartbeat', 'sfx_massivedamage'), volume: 0.05, autoplay: true, loop: false }, false);
+				HB_play(game.settings.get('heartbeat', 'sfx_massivedamage'), 0.05, false);
 				// Massive damage splatter
 				if(damageTaken != null) {
 					spawnSplatter();
