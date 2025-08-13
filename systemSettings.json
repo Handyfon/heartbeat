@@ -56,5 +56,12 @@
   "hpPath": "system.attribs.hp.value",
   "maxHpPath": "system.attribs.hp.max",
   "allowedActorTypes": ["character", "npc", "creature"]
+  },
+  "cyberpunk-red-core": {
+    "name": "Cyberpunk RED",
+    "hpPath": "system.derivedStats.hp.value",
+    "maxHpPath": "system.derivedStats.hp.max",
+    "allowedActorTypes": ["character", "npc"]
   }
 }
+
