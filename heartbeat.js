@@ -440,7 +440,10 @@ function getNewHPValue(actor, updates, hpPath) {
 }
 Hooks.on('preUpdateActor', (actor, updates, options, userId) => {
     if (!game.settings.get('heartbeat', 'enabledForThisUser')) return;
-
+	if (canvas.tokens.controlled.length === 0) {// If preUpdateActor is called without a controlled token
+		console.warn("Heartbeat | preUpdateActor called without controlled token.");
+		return;
+	}
     const controlledTokens = canvas.tokens.controlled.map(t => t.actor?.id);
     if (canvas.tokens.controlled.length > 1) {// If more than one actor is selected
         return;
@@ -460,6 +463,10 @@ Hooks.on('preUpdateActor', (actor, updates, options, userId) => {
 });
 Hooks.on('updateActor', (actor, updates, options, userId) => {
     if (!game.settings.get('heartbeat', 'enabledForThisUser')) return;
+	if (canvas.tokens.controlled.length === 0) {// If UpdateActor is called without a controlled token
+		console.warn("Heartbeat | UpdateActor called without controlled token.");
+		return;
+	}
     if (canvas.tokens.controlled.length > 1) {// If more than one actor is selected
         return;
     }
