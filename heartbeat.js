@@ -327,10 +327,21 @@ Hooks.once('init', function() {
 });
 
 Hooks.once('ready', function() {
-	if(game.settings.get('heartbeat', 'enableTakeDamageffect'))
-		$('body').append('<img class="hearbeat" id="heartbeat" src="'+ game.settings.get('heartbeat', 'bloodOverlay_path') +'" style="pointer-events:none; position: absolute;width: inherit;height: inherit;opacity: 0.0;">')
-	if(game.settings.get('heartbeat', 'enableDamageOverlay'))
-		$('body').append('<img class="hearbeatDMGOverlay" id="hearbeatDMGOverlay" style="pointer-events:none; position: absolute;width: inherit;height: inherit;opacity: 0.0;">')
+	if(game.settings.get('heartbeat', 'enableTakeDamageffect')) {
+		const heartbeatImg = document.createElement('img');
+		heartbeatImg.className = 'hearbeat';
+		heartbeatImg.id = 'heartbeat';
+		heartbeatImg.src = game.settings.get('heartbeat', 'bloodOverlay_path');
+		heartbeatImg.style.cssText = 'pointer-events:none; position: absolute;width: inherit;height: inherit;opacity: 0.0;';
+		document.body.append(heartbeatImg);
+	}
+	if(game.settings.get('heartbeat', 'enableDamageOverlay')) {
+		const dmgImg = document.createElement('img');
+		dmgImg.className = 'hearbeatDMGOverlay';
+		dmgImg.id = 'hearbeatDMGOverlay';
+		dmgImg.style.cssText = 'pointer-events:none; position: absolute;width: inherit;height: inherit;opacity: 0.0;';
+		document.body.append(dmgImg);
+	}
 	
 	if(canvas.tokens.controlled[0] != undefined){
 		setheartbeat(null,canvas.tokens.controlled[0], 'ready');
@@ -355,15 +366,15 @@ Hooks.once('ready', function() {
 	};
 	if(buttonLocation == 'topright'){
 		heartbeatButton.style = "left: calc(0px - 1.4rem);top: calc(35px - 1.4rem);";
-		$("#sidebar")[0].append(heartbeatButton);
+		document.getElementById("sidebar").append(heartbeatButton);
 	}
 	if(buttonLocation == 'topleft'){
 		heartbeatButton.style = "left: calc(128px - 1.4rem);top: calc(39px - 1.4rem);";
-		$("#ui-left")[0].append(heartbeatButton);
+		document.getElementById("ui-left").append(heartbeatButton);
 	}
 	if(buttonLocation == 'macrobar'){
 		heartbeatButton.style = "left: calc(600px - 1.4rem);bottom: calc(47px - 1.4rem);";
-		$("#ui-bottom")[0].append(heartbeatButton);
+		document.getElementById("ui-bottom").append(heartbeatButton);
 	}
 
 	// Change style based on setting
@@ -388,7 +399,7 @@ function toggleHeartBeatForCurrentUser(){
 	}
 }
 function changeHeartBeatButtton(enableDisable) {
-	let button = $('#heartbeat-button')[0];
+	let button = document.getElementById("heartbeat-button");
 	if(button == undefined)return;
 	if (enableDisable === 'on') {
 	  button.textContent = '❤️'; // Set the button's text content
@@ -510,15 +521,15 @@ function isActorTypeAllowed(actor) {
 
 function disableHeartBeat() {
     document.getElementById("heartbeat").style.opacity = 0;
-    $("#board")[0].style.filter = '';
+    document.getElementById("board").style.filter = '';
     
     if (!game.settings.get('heartbeat', 'enabledForThisUser')) {
         changeHeartBeatButtton('off');
     }
 
     const soundsrc = game.settings.get('heartbeat', 'sfx_heartbeat');
-    game.audio.playing.forEach(function(sound) {
-        if (sound.src.endsWith(soundsrc)) {
+    game.audio?.playing?.forEach(function(sound) {
+        if (sound.src?.endsWith(soundsrc)) {
             sound.stop();
         }
     });
@@ -547,11 +558,14 @@ async function damage(percent, dhp = null, maxHp) {
 		screenShake(shakeIntensity, shakeDuration);
 	}
 
+    const dmgOverlay = document.getElementById("hearbeatDMGOverlay");
+    if (!dmgOverlay) return;
+
     // Set the damage overlay color based on whether HP increased or decreased
     if (dhp > 0) {
-        $("#hearbeatDMGOverlay")[0].style.background = "radial-gradient(circle, rgba(255, 255, 255, 0%) 27%, rgb(0, 145, 25) 100%)";
+        dmgOverlay.style.background = "radial-gradient(circle, rgba(255, 255, 255, 0%) 27%, rgb(0, 145, 25) 100%)";
     } else {
-        $("#hearbeatDMGOverlay")[0].style.background = "radial-gradient(circle, rgba(255, 255, 255, 0%) 27%, rgb(145, 0, 0) 100%)";
+        dmgOverlay.style.background = "radial-gradient(circle, rgba(255, 255, 255, 0%) 27%, rgb(145, 0, 0) 100%)";
     }
 
     // Calculate duration for the animation
@@ -560,9 +574,9 @@ async function damage(percent, dhp = null, maxHp) {
         duration = 1;
 
     // Start the damage overlay animation
-    $("#hearbeatDMGOverlay")[0].style.animation = "HeartBeatFadeOut " + duration + "s";
+    dmgOverlay.style.animation = "HeartBeatFadeOut " + duration + "s";
     await delay(duration * 1000);
-    $("#hearbeatDMGOverlay")[0].style.animation = "";
+    dmgOverlay.style.animation = "";
 	
     if (maxHp > 0 && dhp != null && dhp <= 0) {
         let damagePercentage = (Math.abs(dhp) / maxHp) * 100;
@@ -600,10 +614,10 @@ function setheartbeat(damageTaken = null, token = null, source = null){
 	if(!game.settings.get('heartbeat', 'enabledForThisUser')) return;
 	let character;
 
-	if(token != null) character = token.actor;
+	if(token?.actor) character = token.actor;
 	if(game.user.character != null && !game.user.isGM) character = game.user.character;
-	if(game.user.character == null && token == null){
-		if(canvas.tokens.controlled.length == 1) character = canvas.tokens.controlled[0].actor;
+	if(game.user.character == null && (!token || !token.actor)){
+		if(canvas.tokens.controlled.length == 1 && canvas.tokens.controlled[0]?.actor) character = canvas.tokens.controlled[0].actor;
 		else return;
 	};
 
@@ -660,12 +674,12 @@ function setheartbeat(damageTaken = null, token = null, source = null){
 				let style = '';
 				if(game.settings.get('heartbeat', 'canvasBlur')) style += 'blur('+blurvalue+'px )';
 				if(game.settings.get('heartbeat', 'canvasBrightness')) style += 'brightness('+brightnessvalue+')';
-				$("#board")[0].style.filter = style;
+				document.getElementById("board").style.filter = style;
 			}
-			else $("#board")[0].style.filter = '';
+			else document.getElementById("board").style.filter = '';
 		}
 		else{
-			$("#board")[0].style.filter = '';
+			document.getElementById("board").style.filter = '';
 			document.getElementById("heartbeat").style.opacity = 0;
 		}
 
@@ -680,8 +694,8 @@ function setheartbeat(damageTaken = null, token = null, source = null){
 		}
 		
 		if(percent == 1 && game.settings.get('heartbeat', 'tokenDeath')){
-			$("#board")[0].style.filter = 'grayscale(1) brightness(0.2)';
-			$("#heartbeat")[0].style.filter = 'blur(0) grayscale(1) brightness(0.1)';
+			document.getElementById("board").style.filter = 'grayscale(1) brightness(0.2)';
+			document.getElementById("heartbeat").style.filter = 'blur(0) grayscale(1) brightness(0.1)';
 		}
 		return;
 	}
@@ -700,10 +714,10 @@ function setheartbeat(damageTaken = null, token = null, source = null){
 		let style = '';
 		if(game.settings.get('heartbeat', 'canvasBlur')) style += 'blur('+blurvalue+'px )';
 		if(game.settings.get('heartbeat', 'canvasBrightness')) style += 'brightness('+brightnessvalue+')';
-		$("#board")[0].style.filter = style;
+		document.getElementById("board").style.filter = style;
 	}
 	else{
-		$("#board")[0].style.filter = '';
+		document.getElementById("board").style.filter = '';
 		document.getElementById("heartbeat").style.opacity = 0;
 	}
 
@@ -718,8 +732,8 @@ function setheartbeat(damageTaken = null, token = null, source = null){
 	}
 
 	if(percent == 0 && game.settings.get('heartbeat', 'tokenDeath')){
-		$("#board")[0].style.filter = 'grayscale(1) brightness(0.2)';
-		$("#heartbeat")[0].style.filter = 'blur(0) grayscale(1) brightness(0.1)';
+		document.getElementById("board").style.filter = 'grayscale(1) brightness(0.2)';
+		document.getElementById("heartbeat").style.filter = 'blur(0) grayscale(1) brightness(0.1)';
 		document.getElementById("heartbeat").style.opacity = 1;
 		if(damageTaken != null) {
 			spawnSplatter();
@@ -776,7 +790,8 @@ function spawnSplatter() {
     splatterImg.style.pointerEvents = 'none';
     splatterImg.style.position = 'fixed';
 
-    let boardElement = $("#board")[0];
+    const boardElement = document.getElementById("board");
+    if(!boardElement) return;
     let boardRect = boardElement.getBoundingClientRect();
 
     // Remove boardRect.left and boardRect.top from the calculation
