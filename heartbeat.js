@@ -824,14 +824,29 @@ Hooks.once('ready', async function() {
     const defaultMaxHpPath = "system.attributes.hp.max";
     const defaultActorTypes = "character,npc";
 
-    const hasSeenRecommendation = game.settings.get('heartbeat', 'hasSeenRecommendation');
-    if (hasSeenRecommendation || currentSystem === "dnd5e") return;
-
     const currentHpPath = game.settings.get('heartbeat', 'hpPath');
     const currentMaxHpPath = game.settings.get('heartbeat', 'maxhpPath');
     const currentActorTypes = game.settings.get('heartbeat', 'additionalActorTypes');
-
     let preset = systemPresets[currentSystem] || null;
+
+    if (preset && currentHpPath === defaultHpPath && preset.hpPath !== defaultHpPath) {
+        await game.settings.set('heartbeat', 'hpPath', preset.hpPath);
+        await game.settings.set('heartbeat', 'maxhpPath', preset.maxHpPath);
+        const extraTypes = (preset.allowedActorTypes || []).filter(type => type !== 'character' && type !== 'npc');
+        const currentList = String(currentActorTypes || '').split(',').map(type => type.trim()).filter(Boolean);
+        const replaceDefaultMecha = currentList.length === 1 && currentList[0].toLowerCase() === 'mecha';
+        const mergedTypes = [...new Set([...(replaceDefaultMecha ? [] : currentList), ...extraTypes])];
+        if (mergedTypes.length) {
+            await game.settings.set('heartbeat', 'additionalActorTypes', mergedTypes.join(', '));
+        }
+        await game.settings.set('heartbeat', 'hasSeenRecommendation', true);
+        ui.notifications.info(`Heartbeat | Applied ${preset.name} HP paths.`);
+        return;
+    }
+
+    const hasSeenRecommendation = game.settings.get('heartbeat', 'hasSeenRecommendation');
+    if (hasSeenRecommendation || currentSystem === "dnd5e") return;
+
     let requiresSetup = !preset;
 
     let availableActorTypes = Object.keys(game.model.Actor || {});
@@ -894,7 +909,19 @@ Hooks.once('ready', async function() {
 });
 
 
+async function loadLocalSystemPresets() {
+    try {
+        const response = await fetch("modules/heartbeat/systemSettings.json", { cache: "no-cache" });
+        if (!response.ok) throw new Error(`HTTP Error: ${response.status}`);
+        return await response.json();
+    } catch (error) {
+        console.warn("Heartbeat | Failed to load local system presets.", error);
+        return {};
+    }
+}
+
 async function loadSystemPresets() {
+    const local = await loadLocalSystemPresets();
     const githubURL = "https://raw.githubusercontent.com/Handyfon/heartbeat/master/systemSettings.json";
     
     try {
@@ -903,9 +930,9 @@ async function loadSystemPresets() {
 
         const json = await response.json();
         console.log("Heartbeat | Loaded system presets from GitHub.");
-        return json;
+        return { ...json, ...local };
     } catch (error) {
-        console.warn("Heartbeat | Failed to load system presets from GitHub. Defaulting to unsupported system behavior.", error);
-        return {}; // No fallback, just return empty object
+        console.warn("Heartbeat | Failed to load system presets from GitHub. Using local presets.", error);
+        return local;
     }
 }
